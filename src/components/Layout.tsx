@@ -5,6 +5,7 @@ import { AddWalkin } from './AddWalkin';
 import { Registry } from './Registry';
 import { Reports } from './Reports';
 import { FollowUpPipeline } from './FollowUpPipeline';
+import { AccountantReports } from './AccountantReports';
 import { TODAY } from '../constants';
 
 interface LayoutProps {
@@ -55,6 +56,13 @@ function PhoneIcon() {
     </svg>
   );
 }
+function ReceiptIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 14h6M9 10h6M7 21l2-1.5 2 1.5 2-1.5 2 1.5 2-1.5 2 1.5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l2-1.5z" />
+    </svg>
+  );
+}
 
 export function Layout({ walkins, currentView, setView, onAdd }: LayoutProps) {
   const reportsViews: View[] = ['channel-analytics', 'lost-sales', 'daily-summary', 'funnel'];
@@ -65,6 +73,7 @@ export function Layout({ walkins, currentView, setView, onAdd }: LayoutProps) {
     { view: 'add', label: 'Add Walk-in', icon: <PlusIcon /> },
     { view: 'registry', label: 'Registry', icon: <ListIcon /> },
     { view: 'reports', label: 'Reports', icon: <ChartIcon /> },
+    { view: 'accountant', label: 'Verify', icon: <ReceiptIcon /> },
     { view: 'followup', label: 'Follow-up', icon: <PhoneIcon /> },
   ];
 
@@ -72,6 +81,7 @@ export function Layout({ walkins, currentView, setView, onAdd }: LayoutProps) {
     { view: 'dashboard' as View, label: 'Dashboard', icon: <HouseIcon /> },
     { view: 'add' as View, label: 'Add Walk-in', icon: <PlusIcon /> },
     { view: 'registry' as View, label: 'Registry', icon: <ListIcon /> },
+    { view: 'accountant' as View, label: 'Accountant', icon: <ReceiptIcon /> },
     { view: 'funnel' as View, label: '🎯 Funnel', icon: <ChartIcon /> },
     { view: 'channel-analytics' as View, label: 'Channels', icon: <ChartIcon /> },
     { view: 'lost-sales' as View, label: 'Lost Sales', icon: (
@@ -96,6 +106,7 @@ export function Layout({ walkins, currentView, setView, onAdd }: LayoutProps) {
     if (currentView === 'add') return <AddWalkin walkins={walkins} onAdd={onAdd} />;
     if (currentView === 'registry') return <Registry walkins={walkins} />;
     if (currentView === 'followup') return <FollowUpPipeline walkins={walkins} />;
+    if (currentView === 'accountant') return <AccountantReports walkins={walkins} />;
     if (reportsViews.includes(currentView)) {
       return <Reports walkins={walkins} />;
     }

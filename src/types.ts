@@ -37,6 +37,19 @@ export interface WalkIn {
   notes: string;
 }
 
+export interface AccountantReport {
+  id: string;
+  date: string;
+  walkInCount: number;
+  totalRevenue: number;
+  totalBills: number;
+  reportFileUrl: string | null;
+  notes: string;
+  submittedBy: string;
+  createdAt: string;
+}
+
 export type View =
   | 'dashboard' | 'add' | 'registry' | 'channel-analytics'
-  | 'lost-sales' | 'followup' | 'daily-summary' | 'funnel';
+  | 'lost-sales' | 'followup' | 'daily-summary' | 'funnel'
+  | 'accountant';

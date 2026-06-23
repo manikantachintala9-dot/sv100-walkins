@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { WalkIn } from '../types';
+import type { AccountantReport, WalkIn } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -25,6 +25,18 @@ interface Row {
   notes: string;
 }
 
+interface AccountantReportRow {
+  id: string;
+  date: string;
+  walk_in_count: number;
+  total_revenue: number;
+  total_bills: number | null;
+  report_file_url: string | null;
+  notes: string | null;
+  submitted_by: string | null;
+  created_at: string;
+}
+
 export function toRow(w: WalkIn): Row {
   return {
     id: w.id,
@@ -42,6 +54,33 @@ export function toRow(w: WalkIn): Row {
     lost_reason: w.lostReason ?? null,
     follow_up_date: w.followUpDate ?? null,
     notes: w.notes,
+  };
+}
+
+function fromAccountantReportRow(row: AccountantReportRow): AccountantReport {
+  return {
+    id: row.id,
+    date: row.date,
+    walkInCount: row.walk_in_count,
+    totalRevenue: Number(row.total_revenue ?? 0),
+    totalBills: row.total_bills ?? 0,
+    reportFileUrl: row.report_file_url,
+    notes: row.notes ?? '',
+    submittedBy: row.submitted_by ?? '',
+    createdAt: row.created_at,
+  };
+}
+
+function toAccountantReportRow(report: Omit<AccountantReport, 'createdAt'>): Omit<AccountantReportRow, 'created_at'> {
+  return {
+    id: report.id,
+    date: report.date,
+    walk_in_count: report.walkInCount,
+    total_revenue: report.totalRevenue,
+    total_bills: report.totalBills,
+    report_file_url: report.reportFileUrl,
+    notes: report.notes,
+    submitted_by: report.submittedBy,
   };
 }
 
@@ -95,4 +134,41 @@ export async function dbCount(): Promise<number> {
     .select('*', { count: 'exact', head: true });
   if (error) throw error;
   return count ?? 0;
+}
+
+export async function dbFetchAccountantReports(): Promise<AccountantReport[]> {
+  const { data, error } = await supabase
+    .from('accountant_reports')
+    .select('*')
+    .order('date', { ascending: false });
+  if (error) throw error;
+  return (data as AccountantReportRow[]).map(fromAccountantReportRow);
+}
+
+export async function dbUpsertAccountantReport(report: Omit<AccountantReport, 'createdAt'>): Promise<AccountantReport> {
+  const { data, error } = await supabase
+    .from('accountant_reports')
+    .upsert(toAccountantReportRow(report), { onConflict: 'date' })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return fromAccountantReportRow(data as AccountantReportRow);
+}
+
+export async function uploadAccountantReportFile(date: string, file: File): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+  const safeName = file.name
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-z0-9_-]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48) || 'report';
+  const path = `${date}/${Date.now()}-${safeName}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('reports')
+    .upload(path, file, { upsert: true });
+  if (error) throw error;
+
+  const { data } = supabase.storage.from('reports').getPublicUrl(path);
+  return data.publicUrl;
 }
