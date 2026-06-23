@@ -2,7 +2,7 @@ import type {
   TrafficSource, CustomerType, Requirement, BudgetRange, LostReason,
 } from './types';
 
-export const TODAY = '2026-06-20';
+export const TODAY = new Date().toISOString().split('T')[0];
 
 export const TRAFFIC_SOURCE_LABELS: Record<TrafficSource, string> = {
   google_maps: 'Google Maps',

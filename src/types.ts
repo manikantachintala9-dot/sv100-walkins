@@ -39,4 +39,4 @@ export interface WalkIn {
 
 export type View =
   | 'dashboard' | 'add' | 'registry' | 'channel-analytics'
-  | 'lost-sales' | 'followup' | 'daily-summary';
+  | 'lost-sales' | 'followup' | 'daily-summary' | 'funnel';
